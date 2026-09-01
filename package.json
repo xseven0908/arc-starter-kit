@@ -9,7 +9,8 @@
     "deploy": "hardhat run scripts/deploy.ts --network arcTestnet",
     "watch": "tsx scripts/watch-events.ts",
     "send": "tsx scripts/send-payment.ts",
-    "balance": "tsx scripts/unified-balance.ts"
+    "balance": "tsx scripts/unified-balance.ts",
+    "bridge": "tsx scripts/bridge-payment.ts"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",

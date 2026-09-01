@@ -30,7 +30,7 @@ Right now `PaymentLog` just logs numbers; nothing actually moves. Wiring in Circ
 
 - [x] `send()` — `scripts/send-payment.ts` moves real testnet USDC via App Kit (verified on Testnet, see README). Still standalone rather than coupled to `recordPayment()`.
 - [x] `unifiedBalance` — `scripts/unified-balance.ts` queries `kit.unifiedBalance.getBalances()` (verified working; reads 0 since no funds have been deposited into Gateway yet via `deposit()`)
-- [ ] `bridge()` — small CLI script to bridge testnet USDC into Arc from another supported chain, using `app-kit/quickstarts/bridge-tokens-across-blockchains` as the reference
+- [x] `bridge()` — `scripts/bridge-payment.ts` calls `kit.bridge()`; code path verified (correctly rejects for insufficient source-chain balance), full live transfer pending Base Sepolia funding
 - [ ] Extend `PaymentLog` (or add a sibling contract) with an `escrow`-style hold/release pattern, since payments + bridging naturally lead to "pay on confirm" flows
 
 ## Phase 3 — Contract surface area

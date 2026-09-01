@@ -10,6 +10,7 @@ Minimal Hardhat + TypeScript starter for deploying and monitoring smart contract
 - `scripts/watch-events.ts` — a standalone [viem](https://viem.sh) script that watches `PaymentRecorded` events in real time.
 - `scripts/send-payment.ts` — moves real testnet USDC using Circle's [App Kit](https://docs.arc.io/app-kit) (`@circle-fin/app-kit`), no browser wallet or Circle API key required.
 - `scripts/unified-balance.ts` — queries a wallet's aggregated USDC balance across chains via App Kit's Unified Balance (Gateway) module.
+- `scripts/bridge-payment.ts` — bridges testnet USDC from another chain (default Base Sepolia) into Arc via App Kit's `bridge()` (CCTP under the hood). Needs USDC on the source chain to run for real — see [Verified deployment](#verified-deployment).
 - `test/PaymentLog.test.ts` — a Hardhat test for the contract.
 
 ## Network details (Arc Testnet)
@@ -55,6 +56,9 @@ npm run send
 
 # Query aggregated USDC balance across chains via Unified Balance
 npm run balance
+
+# Bridge testnet USDC from Base Sepolia into Arc (needs USDC on the source chain)
+npm run bridge
 ```
 
 Verify your deployment on [Arcscan](https://testnet.arcscan.app) using the address printed by `deploy`.
@@ -76,10 +80,11 @@ The full deploy → transact → watch loop has been run end-to-end on Arc Testn
 - `npm run watch` printed the corresponding `PaymentRecorded` event in real time.
 - `npm run send` moved 0.10 USDC from `0x4dEF...EC8bc` to `0x7D4F...561Fe` via App Kit: [`0x1b2c0c8f...db25a9e`](https://testnet.arcscan.app/tx/0x1b2c0c8f44ac4fc34b3092bb3da57d8f4724388700e4d1f833204df34db25a9e).
 - `npm run balance` successfully calls App Kit's Gateway balance API and returns a real per-chain breakdown. It reads `0` everywhere because Unified Balance tracks funds explicitly deposited into Gateway via `kit.unifiedBalance.deposit()` — a separate step from holding USDC in the wallet directly (which is what `send` uses).
+- `npm run bridge` reaches App Kit's on-chain balance check and correctly reports `BALANCE_INSUFFICIENT_TOKEN` (the wallet has no USDC on Base Sepolia yet). Code path verified; a live cross-chain transfer is pending source-chain funding.
 
 ## Next steps
 
 - Call `recordPayment(to, amount, memo)` from a script or Arcscan's "Write Contract" tab to see events flow through `npm run watch`.
 - Call `kit.unifiedBalance.deposit()` to actually fund the Gateway balance, then re-run `npm run balance` to see it reflected.
-- Add `kit.bridge()` (App Kit's remaining module alongside Send and Unified Balance) to move USDC across chains.
+- Fund the deployer wallet with testnet USDC on Base Sepolia (same address, [Circle faucet](https://faucet.circle.com)) and re-run `npm run bridge` for a full live cross-chain transfer.
 - See [docs.arc.io](https://docs.arc.io) for App Kit's Bridge/Swap/Send/Unified Balance kits and the Arc MCP server for AI-agent integrations.
