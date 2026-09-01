@@ -1,5 +1,7 @@
 # Arc Starter Kit
 
+[![CI](https://github.com/xseven0908/arc-starter-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/xseven0908/arc-starter-kit/actions/workflows/ci.yml)
+
 Minimal Hardhat + TypeScript starter for deploying and monitoring smart contracts on
 [Arc Testnet](https://docs.arc.io) — Circle's stablecoin-native, EVM-compatible L1 where USDC is the native gas token.
 

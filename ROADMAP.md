@@ -57,7 +57,7 @@ The current contract is intentionally the simplest possible thing. Natural next 
 
 ## Phase 6 — Operational hardening
 
-- [ ] GitHub Actions CI: `npm ci && npm run compile && npm test` on every push/PR
+- [x] GitHub Actions CI: `.github/workflows/ci.yml` runs `npm ci`, `compile`, `tsc --noEmit`, and `test` on every push/PR to `main`
 - [ ] Solidity static analysis (Slither or equivalent) once contracts beyond `PaymentLog` exist
 - [ ] Move `PRIVATE_KEY` handling off plaintext `.env` for anything beyond local testnet use (e.g. Circle's Developer-Controlled Wallets, which sign server-side and never expose a raw key — see `arc/tutorials/deploy-contracts`)
 - [ ] Read `arc/references/evm-differences` before writing anything beyond simple contracts — Arc's Reth-based EVM has a few documented deviations (e.g. around `CALL`-related precompiles) worth knowing before they cause a subtle bug
