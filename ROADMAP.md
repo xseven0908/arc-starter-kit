@@ -37,9 +37,9 @@ Right now `PaymentLog` just logs numbers; nothing actually moves. Wiring in Circ
 
 The current contract is intentionally the simplest possible thing. Natural next contracts, in rough order of complexity:
 
-- [ ] **Invoice/Subscription**: recurring `recordPayment` calls on a schedule, with a `dueAmount`/`isPaid` view — maps to the "e-commerce settlement" use case in the docs
+- [x] **Invoice**: `contracts/Invoice.sol` — sellers issue invoices, buyers pay in native USDC via `payable`; 5 tests, deployed and paid live on Testnet. Maps to "e-commerce settlement."
 - [ ] **Escrow**: hold funds until a counterparty confirms — maps to "p2p payments" with dispute safety
-- [ ] **Simple lending pool**: deposit/borrow against USDC collateral — maps to the "lending protocols" use case; good vehicle for learning Arc's fee model since it's on `docs.arc.io/arc/references/gas-and-fees`
+- [ ] **Simple lending pool**: revisit scope — Arc's native asset *is* USDC, so a classic over-collateralized pool needs a second token to borrow against. Options: (a) skip true lending and build a fixed-rate single-asset savings pool instead, or (b) deploy a mock ERC-20 collateral token alongside it. Decide before building.
 - [ ] Multi-contract test suite + gas snapshot once there's more than one contract, so regressions in fee behavior are visible
 
 ## Phase 4 — Frontend

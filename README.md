@@ -6,6 +6,7 @@ Minimal Hardhat + TypeScript starter for deploying and monitoring smart contract
 ## What's inside
 
 - `contracts/PaymentLog.sol` — a tiny on-chain ledger that records payments and emits a `PaymentRecorded` event, modeling Arc's peer-to-peer payments use case.
+- `contracts/Invoice.sol` — sellers issue invoices, buyers pay them in native USDC (`payable`/`msg.value`, no ERC-20 approval needed) — models e-commerce settlement, with 5 passing tests.
 - `scripts/deploy.ts` — deploys the contract to Arc Testnet via Hardhat/ethers.
 - `scripts/watch-events.ts` — a standalone [viem](https://viem.sh) script that watches `PaymentRecorded` events in real time.
 - `scripts/send-payment.ts` — moves real testnet USDC using Circle's [App Kit](https://docs.arc.io/app-kit) (`@circle-fin/app-kit`), no browser wallet or Circle API key required.
@@ -48,6 +49,9 @@ npm test
 npm run deploy
 # -> copy the printed address into .env as CONTRACT_ADDRESS
 
+# Deploy Invoice to Arc Testnet
+npm run deploy:invoice
+
 # Watch PaymentRecorded events live
 npm run watch
 
@@ -81,6 +85,7 @@ The full deploy → transact → watch loop has been run end-to-end on Arc Testn
 - `npm run send` moved 0.10 USDC from `0x4dEF...EC8bc` to `0x7D4F...561Fe` via App Kit: [`0x1b2c0c8f...db25a9e`](https://testnet.arcscan.app/tx/0x1b2c0c8f44ac4fc34b3092bb3da57d8f4724388700e4d1f833204df34db25a9e).
 - `npm run balance` successfully calls App Kit's Gateway balance API and returns a real per-chain breakdown. It reads `0` everywhere because Unified Balance tracks funds explicitly deposited into Gateway via `kit.unifiedBalance.deposit()` — a separate step from holding USDC in the wallet directly (which is what `send` uses).
 - `npm run bridge` reaches App Kit's on-chain balance check and correctly reports `BALANCE_INSUFFICIENT_TOKEN` against a live RPC call. The wallet was funded with 20 USDC on Base Sepolia via the Circle faucet, but no Base Sepolia ETH for gas — the faucets that offer it gate behind a mainnet ETH balance requirement, so a full live transfer (burn + mint) hasn't been exercised. Code path and error handling are verified; this is the one script in the kit that's untested end-to-end.
+- Invoice: [`0xd010C9b04202ABC4598Ece27523E0CCbd0dE58ed`](https://testnet.arcscan.app/address/0xd010C9b04202ABC4598Ece27523E0CCbd0dE58ed) — created and paid a 0.05 USDC invoice: [create](https://testnet.arcscan.app/tx/0x059d469bf7252007772740011e66c6e889b5ddcd917e2a9bb49fa6ebb1be55b3), [pay](https://testnet.arcscan.app/tx/0x419f86b73007f5714b564938bee05c05420b44c953cacc1b2ec64b105705ce4d) (same address as both seller and payer in this demo, for simplicity).
 
 ## Next steps
 
