@@ -80,7 +80,7 @@ The full deploy → transact → watch loop has been run end-to-end on Arc Testn
 - `npm run watch` printed the corresponding `PaymentRecorded` event in real time.
 - `npm run send` moved 0.10 USDC from `0x4dEF...EC8bc` to `0x7D4F...561Fe` via App Kit: [`0x1b2c0c8f...db25a9e`](https://testnet.arcscan.app/tx/0x1b2c0c8f44ac4fc34b3092bb3da57d8f4724388700e4d1f833204df34db25a9e).
 - `npm run balance` successfully calls App Kit's Gateway balance API and returns a real per-chain breakdown. It reads `0` everywhere because Unified Balance tracks funds explicitly deposited into Gateway via `kit.unifiedBalance.deposit()` — a separate step from holding USDC in the wallet directly (which is what `send` uses).
-- `npm run bridge` reaches App Kit's on-chain balance check and correctly reports `BALANCE_INSUFFICIENT_TOKEN` (the wallet has no USDC on Base Sepolia yet). Code path verified; a live cross-chain transfer is pending source-chain funding.
+- `npm run bridge` reaches App Kit's on-chain balance check and correctly reports `BALANCE_INSUFFICIENT_TOKEN` against a live RPC call. The wallet was funded with 20 USDC on Base Sepolia via the Circle faucet, but no Base Sepolia ETH for gas — the faucets that offer it gate behind a mainnet ETH balance requirement, so a full live transfer (burn + mint) hasn't been exercised. Code path and error handling are verified; this is the one script in the kit that's untested end-to-end.
 
 ## Next steps
 

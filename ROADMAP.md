@@ -30,7 +30,7 @@ Right now `PaymentLog` just logs numbers; nothing actually moves. Wiring in Circ
 
 - [x] `send()` — `scripts/send-payment.ts` moves real testnet USDC via App Kit (verified on Testnet, see README). Still standalone rather than coupled to `recordPayment()`.
 - [x] `unifiedBalance` — `scripts/unified-balance.ts` queries `kit.unifiedBalance.getBalances()` (verified working; reads 0 since no funds have been deposited into Gateway yet via `deposit()`)
-- [x] `bridge()` — `scripts/bridge-payment.ts` calls `kit.bridge()`; code path verified (correctly rejects for insufficient source-chain balance), full live transfer pending Base Sepolia funding
+- [x] `bridge()` — `scripts/bridge-payment.ts` calls `kit.bridge()`; code path verified against the live API (USDC funded on Base Sepolia, but no faucet would issue Base Sepolia ETH for gas without a mainnet balance). Live burn+mint transfer untested; revisit if a gas faucet becomes available.
 - [ ] Extend `PaymentLog` (or add a sibling contract) with an `escrow`-style hold/release pattern, since payments + bridging naturally lead to "pay on confirm" flows
 
 ## Phase 3 — Contract surface area
