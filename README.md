@@ -51,6 +51,14 @@ npm run watch
 
 Verify your deployment on [Arcscan](https://testnet.arcscan.app) using the address printed by `deploy`.
 
+## Verified deployment
+
+The full deploy → transact → watch loop has been run end-to-end on Arc Testnet:
+
+- Contract: [`0xB273B3D1f6fD43cc7EfaC625bfF56f114895adB5`](https://testnet.arcscan.app/address/0xB273B3D1f6fD43cc7EfaC625bfF56f114895adB5)
+- Example transaction: [`0x0d7359c8bc22f4a05973f72519c54bd25b625414e3e0b0afcd9ebc56fa02c2ad`](https://testnet.arcscan.app/tx/0x0d7359c8bc22f4a05973f72519c54bd25b625414e3e0b0afcd9ebc56fa02c2ad)
+- `npm run watch` printed the corresponding `PaymentRecorded` event in real time.
+
 ## Next steps
 
 - Call `recordPayment(to, amount, memo)` from a script or Arcscan's "Write Contract" tab to see events flow through `npm run watch`.
