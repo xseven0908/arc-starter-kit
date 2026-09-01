@@ -8,6 +8,7 @@
     "test": "hardhat test",
     "deploy": "hardhat run scripts/deploy.ts --network arcTestnet",
     "deploy:invoice": "hardhat run scripts/deploy-invoice.ts --network arcTestnet",
+    "deploy:escrow": "hardhat run scripts/deploy-escrow.ts --network arcTestnet",
     "watch": "tsx scripts/watch-events.ts",
     "send": "tsx scripts/send-payment.ts",
     "balance": "tsx scripts/unified-balance.ts",
