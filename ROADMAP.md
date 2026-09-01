@@ -28,7 +28,7 @@ Nothing here changes the code; it validates what already exists.
 
 Right now `PaymentLog` just logs numbers; nothing actually moves. Wiring in Circle's `@circle-fin/app-kit` closes that gap:
 
-- [ ] `send()` — transfer real testnet USDC alongside the `recordPayment()` call, so the log matches an actual on-chain transfer
+- [x] `send()` — `scripts/send-payment.ts` moves real testnet USDC via App Kit (verified on Testnet, see README). Still standalone rather than coupled to `recordPayment()`.
 - [ ] `unifiedBalance` — add a script that reads a wallet's aggregated balance across supported chains
 - [ ] `bridge()` — small CLI script to bridge testnet USDC into Arc from another supported chain, using `app-kit/quickstarts/bridge-tokens-across-blockchains` as the reference
 - [ ] Extend `PaymentLog` (or add a sibling contract) with an `escrow`-style hold/release pattern, since payments + bridging naturally lead to "pay on confirm" flows

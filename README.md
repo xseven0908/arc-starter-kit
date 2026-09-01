@@ -8,6 +8,7 @@ Minimal Hardhat + TypeScript starter for deploying and monitoring smart contract
 - `contracts/PaymentLog.sol` — a tiny on-chain ledger that records payments and emits a `PaymentRecorded` event, modeling Arc's peer-to-peer payments use case.
 - `scripts/deploy.ts` — deploys the contract to Arc Testnet via Hardhat/ethers.
 - `scripts/watch-events.ts` — a standalone [viem](https://viem.sh) script that watches `PaymentRecorded` events in real time.
+- `scripts/send-payment.ts` — moves real testnet USDC using Circle's [App Kit](https://docs.arc.io/app-kit) (`@circle-fin/app-kit`), no browser wallet or Circle API key required.
 - `test/PaymentLog.test.ts` — a Hardhat test for the contract.
 
 ## Network details (Arc Testnet)
@@ -47,9 +48,20 @@ npm run deploy
 
 # Watch PaymentRecorded events live
 npm run watch
+
+# Send real testnet USDC via App Kit (set RECIPIENT_ADDRESS in .env first)
+npm run send
 ```
 
 Verify your deployment on [Arcscan](https://testnet.arcscan.app) using the address printed by `deploy`.
+
+### App Kit send
+
+`scripts/send-payment.ts` uses `createViemAdapterFromPrivateKey` (from `@circle-fin/adapter-viem-v2/next`)
+to sign locally with the same private key from `.env`, then calls `AppKit#send()` to move real USDC on
+`Arc_Testnet` — no browser extension and no Circle-hosted wallet required. This is the "send" building
+block from Circle's four App Kit modules (Send, Bridge, Swap, Unified Balance); see [Next steps](#next-steps)
+for the others.
 
 ## Verified deployment
 
@@ -58,9 +70,10 @@ The full deploy → transact → watch loop has been run end-to-end on Arc Testn
 - Contract: [`0xB273B3D1f6fD43cc7EfaC625bfF56f114895adB5`](https://testnet.arcscan.app/address/0xB273B3D1f6fD43cc7EfaC625bfF56f114895adB5)
 - Example transaction: [`0x0d7359c8bc22f4a05973f72519c54bd25b625414e3e0b0afcd9ebc56fa02c2ad`](https://testnet.arcscan.app/tx/0x0d7359c8bc22f4a05973f72519c54bd25b625414e3e0b0afcd9ebc56fa02c2ad)
 - `npm run watch` printed the corresponding `PaymentRecorded` event in real time.
+- `npm run send` moved 0.10 USDC from `0x4dEF...EC8bc` to `0x7D4F...561Fe` via App Kit: [`0x1b2c0c8f...db25a9e`](https://testnet.arcscan.app/tx/0x1b2c0c8f44ac4fc34b3092bb3da57d8f4724388700e4d1f833204df34db25a9e).
 
 ## Next steps
 
 - Call `recordPayment(to, amount, memo)` from a script or Arcscan's "Write Contract" tab to see events flow through `npm run watch`.
-- Swap in Circle's [App Kit](https://docs.arc.io/app-kit) (`@circle-fin/app-kit`) to move real testnet USDC instead of just logging amounts.
+- Add `kit.unifiedBalance` and `kit.bridge()` calls (App Kit's remaining two modules alongside Send) to move USDC across chains and query aggregated balances.
 - See [docs.arc.io](https://docs.arc.io) for App Kit's Bridge/Swap/Send/Unified Balance kits and the Arc MCP server for AI-agent integrations.
