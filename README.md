@@ -119,7 +119,15 @@ The full deploy → transact → watch loop has been run end-to-end on Arc Testn
 
 ## Next steps
 
-- Call `recordPayment(to, amount, memo)` from a script or Arcscan's "Write Contract" tab to see events flow through `npm run watch`.
-- Call `kit.unifiedBalance.deposit()` to actually fund the Gateway balance, then re-run `npm run balance` to see it reflected.
-- Fund the deployer wallet with testnet USDC on Base Sepolia (same address, [Circle faucet](https://faucet.circle.com)) and re-run `npm run bridge` for a full live cross-chain transfer.
-- See [docs.arc.io](https://docs.arc.io) for App Kit's Bridge/Swap/Send/Unified Balance kits and the Arc MCP server for AI-agent integrations.
+Everything in `ROADMAP.md` has at least an initial pass built and verified — see `DEV_STATE.md` for the
+full current-state summary. Nothing below is required; these are optional follow-ups if you want to keep going:
+
+- **Interactive browser test of `frontend/`** with a real wallet — the one meaningful unverified gap. Build
+  and type-check pass, but click-through testing hasn't been done (needs Chrome browser tools enabled).
+- **A full live `bridge()` transfer** — code path is verified, but the actual burn+mint was never exercised
+  because Base Sepolia gas faucets all require a pre-existing mainnet ETH balance. Skip unless a no-cost
+  gas source turns up.
+- **Deploy `frontend/` somewhere static** (Vercel/Netlify) so it's a shareable link instead of local-only.
+- Optional deeper App Kit exploration: `kit.unifiedBalance.deposit()` to actually fund the Gateway balance
+  (currently reads 0 because nothing's been deposited into it — see `agent/README.md` and the Verified
+  deployment notes above for what's already been exercised).
