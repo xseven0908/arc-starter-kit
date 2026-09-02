@@ -39,7 +39,7 @@ The current contract is intentionally the simplest possible thing. Natural next 
 
 - [x] **Invoice**: `contracts/Invoice.sol` — sellers issue invoices, buyers pay in native USDC via `payable`; 5 tests, deployed and paid live on Testnet. Maps to "e-commerce settlement."
 - [x] **Escrow**: `contracts/Escrow.sol` — open/release/refund/reclaim-after-timeout; 6 tests, deployed and released live on Testnet. Maps to "p2p payments" with dispute safety.
-- [ ] **Simple lending pool**: revisit scope — Arc's native asset *is* USDC, so a classic over-collateralized pool needs a second token to borrow against. Options: (a) skip true lending and build a fixed-rate single-asset savings pool instead, or (b) deploy a mock ERC-20 collateral token alongside it. Decide before building.
+- [x] **Savings pool**: `contracts/SavingsPool.sol` — single-asset native USDC vault, ERC-4626-style share accounting (user chose this over a mock-ERC20 collateral pool). 5 tests, deployed live: deposit → fundRewards → verified redeemable balance rose correctly → withdraw.
 - [ ] Multi-contract test suite + gas snapshot once there's more than one contract, so regressions in fee behavior are visible
 
 ## Phase 4 — Frontend
