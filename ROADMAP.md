@@ -53,8 +53,8 @@ The current contract is intentionally the simplest possible thing. Natural next 
 ## Phase 5 — AI agent integration
 
 - [x] ~~Point an MCP-capable client at Arc's MCP server~~ — corrected: `docs.arc.io/mcp` (not `/ai/mcp`, the earlier 404 was a wrong path) exposes exactly two tools, `search` and `get page`, over Arc's own documentation. It's a docs-lookup server, not a wallet/balance/contract-state interface — there is nothing there for an agent to transact with.
-- [ ] Build our own MCP server instead (`agent/`) exposing `get_balance`, `send_payment`, and `list_recent_payments` tools that wrap `PaymentLog` + a native transfer, under a spending policy (fixed cap per call, allowlisted recipients) — matches the "AI agent economy" use case from the docs
-- [ ] Log agent-initiated payments distinctly — `send_payment` prefixes the on-chain memo with `[agent]`, and `list_recent_payments` surfaces an `isAgentPayment` flag so agent activity is auditable against human-initiated payments
+- [x] Build our own MCP server instead (`agent/`) exposing `get_balance`, `send_payment`, and `list_recent_payments` tools that wrap `PaymentLog` + a native transfer, under a spending policy (fixed cap per call, allowlisted recipients). Verified live: over-cap and not-allowlisted calls both correctly rejected, a valid payment succeeded (real transfer + PaymentLog entry).
+- [x] Log agent-initiated payments distinctly — `send_payment` prefixes the on-chain memo with `[agent]`, and `list_recent_payments` surfaces an `isAgentPayment` flag; confirmed both live test payments showed up flagged correctly. Discovered along the way: Arc Testnet's public RPC prunes/rate-limits `eth_getLogs`, so the tool is scoped to a ~200-block lookback with graceful degradation on RPC failure (see `agent/README.md`).
 
 ## Phase 6 — Operational hardening
 

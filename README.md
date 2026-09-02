@@ -96,6 +96,13 @@ connect a wallet, see your balance, and call each contract from a form. See `fro
 Build and type-check are verified; interactive browser testing with a live wallet is still outstanding
 (Chrome browser tools weren't available in the session it was built in).
 
+## AI agent
+
+`agent/` is a local [MCP](https://modelcontextprotocol.io) server exposing guarded payment tools
+(`get_balance`, `send_payment`, `list_recent_payments`) so an AI agent can transact on Arc under a spending
+cap and recipient allowlist, modeling the "AI agent economy" use case. See `agent/README.md` — fully
+verified live, including both guardrail-rejection paths and a real payment.
+
 ## Verified deployment
 
 The full deploy → transact → watch loop has been run end-to-end on Arc Testnet:

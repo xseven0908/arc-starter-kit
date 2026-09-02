@@ -1,0 +1,22 @@
+{
+  "name": "arc-starter-kit-agent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MCP server exposing guarded payment tools (spending cap + recipient allowlist) over PaymentLog on Arc Testnet",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/server.ts",
+    "test": "tsx src/test-client.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "dotenv": "^17.4.2",
+    "ethers": "^6.17.0",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2"
+  }
+}
