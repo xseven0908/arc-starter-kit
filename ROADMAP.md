@@ -44,9 +44,10 @@ The current contract is intentionally the simplest possible thing. Natural next 
 
 ## Phase 4 — Frontend
 
-- [ ] A small Next.js/Vite app using `wagmi` + `viem`, per Arc's recommended wallet stack
-- [ ] Wallet connect via ConnectKit or Reown AppKit (both explicitly supported per `arc/references/connect-to-arc`)
-- [ ] UI for: connect wallet → see unified balance → send a logged payment → watch it appear from `watch-events.ts` (or a websocket variant) in real time
+- [x] `frontend/` — Vite + React + TypeScript app using `wagmi` + `viem`
+- [x] Wallet connect via ConnectKit (browser-injected wallets; WalletConnect optional via env var)
+- [x] UI for all four contracts: PaymentLog (record + live event feed), Invoice (create + pay), Escrow (open + release), SavingsPool (deposit/withdraw + live redeemable balance)
+- [ ] Interactive browser verification with a live wallet — build/type-check pass, but click-through testing wasn't done (Chrome browser tools unavailable that session)
 - [ ] Deploy the frontend somewhere static (Vercel/Netlify) so it's a shareable demo, not just local scripts
 
 ## Phase 5 — AI agent integration

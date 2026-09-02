@@ -1,3 +1,7 @@
+> **Disclaimer / 免责声明**
+> This project is for personal testing and learning purposes only. It is provided "as is," with no warranties or guarantees of any kind, and interacts with real testnet funds. The author accepts no responsibility or liability for any loss or damage arising from its use.
+> 本项目仅供个人测试与学习使用,不提供任何形式的保证或承诺,且会与真实的测试网资金交互。因使用本项目而产生的任何损失或损害,作者概不负责。
+
 # Arc Starter Kit
 
 [![CI](https://github.com/xseven0908/arc-starter-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/xseven0908/arc-starter-kit/actions/workflows/ci.yml)
@@ -84,6 +88,13 @@ to sign locally with the same private key from `.env`, then calls `AppKit#send()
 `Arc_Testnet` — no browser extension and no Circle-hosted wallet required. This is the "send" building
 block from Circle's four App Kit modules (Send, Bridge, Swap, Unified Balance); see [Next steps](#next-steps)
 for the others.
+
+## Frontend
+
+`frontend/` is a Vite + React + TypeScript dApp (wagmi + viem + ConnectKit) for all four contracts —
+connect a wallet, see your balance, and call each contract from a form. See `frontend/README.md` for setup.
+Build and type-check are verified; interactive browser testing with a live wallet is still outstanding
+(Chrome browser tools weren't available in the session it was built in).
 
 ## Verified deployment
 
