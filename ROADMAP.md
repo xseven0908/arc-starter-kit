@@ -52,9 +52,9 @@ The current contract is intentionally the simplest possible thing. Natural next 
 
 ## Phase 5 — AI agent integration
 
-- [ ] Point an MCP-capable client at Arc's MCP server (`docs.arc.io/ai/mcp` — needs a fresh read, it 404'd during initial research) to let an LLM query balances/contract state directly
-- [ ] Build a small agent that autonomously calls `recordPayment`/`send()` under a spending policy (fixed cap per call, allowlisted recipients) — matches the "AI agent economy" use case from the docs
-- [ ] Log agent-initiated payments distinctly (e.g. a `memo` prefix or a separate event) so agent activity is auditable against human-initiated payments
+- [x] ~~Point an MCP-capable client at Arc's MCP server~~ — corrected: `docs.arc.io/mcp` (not `/ai/mcp`, the earlier 404 was a wrong path) exposes exactly two tools, `search` and `get page`, over Arc's own documentation. It's a docs-lookup server, not a wallet/balance/contract-state interface — there is nothing there for an agent to transact with.
+- [ ] Build our own MCP server instead (`agent/`) exposing `get_balance`, `send_payment`, and `list_recent_payments` tools that wrap `PaymentLog` + a native transfer, under a spending policy (fixed cap per call, allowlisted recipients) — matches the "AI agent economy" use case from the docs
+- [ ] Log agent-initiated payments distinctly — `send_payment` prefixes the on-chain memo with `[agent]`, and `list_recent_payments` surfaces an `isAgentPayment` flag so agent activity is auditable against human-initiated payments
 
 ## Phase 6 — Operational hardening
 
