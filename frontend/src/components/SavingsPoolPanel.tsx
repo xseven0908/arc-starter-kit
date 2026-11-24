@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { formatEther, parseEther } from "viem";
 import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { arcTestnet } from "../chain";
 import { savingsPool } from "../contracts";
 
 export function SavingsPoolPanel() {
@@ -30,6 +31,8 @@ export function SavingsPoolPanel() {
       abi: savingsPool.abi,
       functionName: "deposit",
       value: parseEther(depositAmount),
+      chain: arcTestnet,
+      account: address,
     });
   }
 
@@ -40,6 +43,8 @@ export function SavingsPoolPanel() {
       abi: savingsPool.abi,
       functionName: "withdraw",
       args: [BigInt(withdrawShares)],
+      chain: arcTestnet,
+      account: address,
     });
   }
 

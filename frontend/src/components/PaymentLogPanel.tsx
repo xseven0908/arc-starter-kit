@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { parseEther } from "viem";
 import { useAccount, useWaitForTransactionReceipt, useWatchContractEvent, useWriteContract } from "wagmi";
+import { arcTestnet } from "../chain";
 import { paymentLog } from "../contracts";
 
 interface LoggedPayment {
@@ -12,7 +13,7 @@ interface LoggedPayment {
 }
 
 export function PaymentLogPanel() {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const [to, setTo] = useState("");
   const [amount, setAmount] = useState("0.01");
   const [memo, setMemo] = useState("starter-kit demo");
@@ -46,6 +47,8 @@ export function PaymentLogPanel() {
       abi: paymentLog.abi,
       functionName: "recordPayment",
       args: [to as `0x${string}`, parseEther(amount), memo],
+      chain: arcTestnet,
+      account: address,
     });
   }
 

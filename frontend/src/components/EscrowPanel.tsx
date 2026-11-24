@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { parseEther } from "viem";
 import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { arcTestnet } from "../chain";
 import { escrow } from "../contracts";
 
 export function EscrowPanel() {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("0.1");
   const [releaseId, setReleaseId] = useState("0");
@@ -22,6 +23,8 @@ export function EscrowPanel() {
       functionName: "open",
       args: [recipient as `0x${string}`],
       value: parseEther(amount),
+      chain: arcTestnet,
+      account: address,
     });
   }
 
@@ -32,6 +35,8 @@ export function EscrowPanel() {
       abi: escrow.abi,
       functionName: "release",
       args: [BigInt(releaseId)],
+      chain: arcTestnet,
+      account: address,
     });
   }
 

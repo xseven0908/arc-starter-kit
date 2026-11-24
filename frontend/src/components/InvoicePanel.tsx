@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { parseEther } from "viem";
 import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { arcTestnet } from "../chain";
 import { invoice } from "../contracts";
 
 export function InvoicePanel() {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const [payer, setPayer] = useState("");
   const [amount, setAmount] = useState("0.05");
   const [memo, setMemo] = useState("order #1");
@@ -23,6 +24,8 @@ export function InvoicePanel() {
       abi: invoice.abi,
       functionName: "createInvoice",
       args: [(payer || "0x0000000000000000000000000000000000000000") as `0x${string}`, parseEther(amount), memo],
+      chain: arcTestnet,
+      account: address,
     });
   }
 
@@ -34,6 +37,8 @@ export function InvoicePanel() {
       functionName: "payInvoice",
       args: [BigInt(payId)],
       value: parseEther(payAmount),
+      chain: arcTestnet,
+      account: address,
     });
   }
 
