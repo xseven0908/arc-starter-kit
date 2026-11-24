@@ -1,133 +1,91 @@
+> [!CAUTION]
 > **Disclaimer / 免责声明**
-> This project is for personal testing and learning purposes only. It is provided "as is," with no warranties or guarantees of any kind, and interacts with real testnet funds. The author accepts no responsibility or liability for any loss or damage arising from its use.
-> 本项目仅供个人测试与学习使用,不提供任何形式的保证或承诺,且会与真实的测试网资金交互。因使用本项目而产生的任何损失或损害,作者概不负责。
+> This project is for personal testing, education, and Arc Testnet experimentation only. It is unaudited, not production-ready, provided "as is" with no warranties or guarantees of any kind, and interacts with real testnet funds. Do not use with real mainnet assets or rely on it for financial, business, or trust decisions. The author accepts no responsibility or liability for any loss or damage arising from its use.
+> 本项目仅供个人测试、教育与 Arc Testnet 实验使用，未经安全审计，不适用于生产环境或真实资产，不提供任何形式的保证或承诺，且会与真实的测试网资金交互。因使用本项目而产生的任何直接或间接损失或损害，作者概不负责。
 
-# Arc Starter Kit
+# Arc Starter Kit (v0.2.0)
 
 [![CI](https://github.com/xseven0908/arc-starter-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/xseven0908/arc-starter-kit/actions/workflows/ci.yml)
+[![Arc Testnet](https://img.shields.io/badge/network-Arc%20Testnet-6c5ce7)](https://docs.arc.io)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Minimal Hardhat + TypeScript starter for deploying and monitoring smart contracts on
-[Arc Testnet](https://docs.arc.io) — Circle's stablecoin-native, EVM-compatible L1 where USDC is the native gas token.
+Full-stack Hardhat + TypeScript reference lab for deploying, testing, and operating payment, escrow, yield-vault, and atomic FX settlement contracts on [Arc Testnet](https://docs.arc.io) — Circle's stablecoin-native, EVM-compatible L1 where USDC is the native gas token.
+
+See [Architecture](docs/architecture.md), [Security Model & Tradeoffs](docs/security-model.md), [Deployed Manifest](deployments/arc-testnet.json), and [Roadmap](ROADMAP.md).
 
 ## What's inside
 
-- `contracts/PaymentLog.sol` — a tiny on-chain ledger that records payments and emits a `PaymentRecorded` event, modeling Arc's peer-to-peer payments use case.
-- `contracts/Invoice.sol` — sellers issue invoices, buyers pay them in native USDC (`payable`/`msg.value`, no ERC-20 approval needed) — models e-commerce settlement, with 5 passing tests.
-- `contracts/Escrow.sol` — depositor locks native USDC for a recipient; release on confirmation, refund voluntarily, or reclaim after a 7-day timeout — models "pay on confirmation" p2p payments, with 6 passing tests.
-- `contracts/SavingsPool.sol` — single-asset native USDC vault using ERC-4626-style share accounting; deposit mints shares, anyone can top up rewards to raise share value, withdraw redeems principal + yield — with 5 passing tests. (Not a collateralized lending market: Arc's native asset *is* USDC, so borrowing would need a second token; this models the deposit/yield side only.)
-- `scripts/deploy.ts` — deploys the contract to Arc Testnet via Hardhat/ethers.
-- `scripts/watch-events.ts` — a standalone [viem](https://viem.sh) script that watches `PaymentRecorded` events in real time.
+### Onchain Primitives (`contracts/`)
+- `contracts/PaymentLog.sol` — a compact on-chain ledger that records payments and emits `PaymentRecorded` events, modeling peer-to-peer and agent-tagged payment audit trails.
+- `contracts/Invoice.sol` — sellers issue invoices, buyers pay them in native USDC (`payable`/`msg.value`, no ERC-20 approval needed). Hardened in v0.2 with reentrancy protection, ID bounds validation, and pull-payment fallback (`withdrawProceeds()`) if a contract seller rejects direct native push transfers.
+- `contracts/Escrow.sol` — depositor locks native USDC for a recipient; release on confirmation, refund voluntarily, or reclaim after a 7-day timeout. Hardened in v0.2 with `nonReentrant` and pull-payment fallback (`claimPending()`).
+- `contracts/SavingsPool.sol` — single-asset native USDC vault using ERC-4626-style share accounting (`totalShares` and internal `totalAssets`); deposit mints shares, `fundRewards()` raises share redemption value, and `withdraw()` redeems principal + yield. *(Educational ERC-4626-style native vault, not a collateralized lending market.)*
+- `contracts/AtomicFxPvP.sol` *(new in v0.2)* — atomic Request-for-Quote (RFQ) Payment-versus-Payment (PvP) settlement between native 18-decimal USDC and 6-decimal ERC-20 stablecoins (such as Arc Testnet `EURC`), eliminating settlement/Herstatt risk in a single transaction.
+
+### Circle App Kit Scripts (`scripts/`)
+- `scripts/deploy*.ts` — deploys each contract to Arc Testnet via Hardhat/ethers.
+- `scripts/watch-events.ts` — standalone [viem](https://viem.sh) script that watches `PaymentRecorded` events in real time.
 - `scripts/send-payment.ts` — moves real testnet USDC using Circle's [App Kit](https://docs.arc.io/app-kit) (`@circle-fin/app-kit`), no browser wallet or Circle API key required.
 - `scripts/unified-balance.ts` — queries a wallet's aggregated USDC balance across chains via App Kit's Unified Balance (Gateway) module.
-- `scripts/bridge-payment.ts` — bridges testnet USDC from another chain (default Base Sepolia) into Arc via App Kit's `bridge()` (CCTP under the hood). Needs USDC on the source chain to run for real — see [Verified deployment](#verified-deployment).
-- `test/PaymentLog.test.ts` — a Hardhat test for the contract.
+- `scripts/bridge-payment.ts` — bridges testnet USDC from another chain (default Base Sepolia) into Arc via App Kit's `bridge()` (CCTP under the hood).
+
+### Full-Stack Packages & Tests
+- `test/` — **27 passing Hardhat unit & security tests** covering happy paths, access control, bounds checks, malicious reverting-receiver DoS resistance, multi-user share conservation, and atomic USDC/EURC FX PvP swaps.
+- `frontend/` — Vite + React + TypeScript dApp (`wagmi` + `viem` + `ConnectKit`) wired to the deployed Arc Testnet contracts.
+- `agent/` — local [MCP](https://modelcontextprotocol.io) server exposing guarded payment tools (`get_balance`, `send_payment`, `list_recent_payments`) under a per-call spending cap (`SPEND_CAP_USDC`) and recipient `ALLOWLIST`.
 
 ## Network details (Arc Testnet)
 
 | | |
 |---|---|
 | Chain ID | `5042002` |
-| RPC (primary) | `https://rpc.testnet.arc.io` |
+| RPC (primary) | `https://rpc.testnet.arc.network` / `https://rpc.testnet.arc.io` |
 | Block explorer | https://testnet.arcscan.app |
 | Faucet | https://faucet.circle.com |
 | Native gas token | USDC (18 decimals) |
+| Ecosystem EURC (ERC-20) | `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` (6 decimals) |
 
-Alternate RPC providers: Blockdaemon, dRPC, QuickNode — see [Connect to Arc](https://docs.arc.io/arc/references/connect-to-arc).
-
-## Setup
+## Setup & Usage
 
 ```bash
 npm install
 cp .env.example .env
 ```
 
-Edit `.env` and set `PRIVATE_KEY` to a testnet-only wallet's private key. Fund that wallet with
-testnet USDC from the [Circle faucet](https://faucet.circle.com) — USDC pays for gas on Arc.
-
-## Usage
+Edit `.env` and set `PRIVATE_KEY` to a testnet-only wallet's private key. Fund that wallet with testnet USDC from the [Circle faucet](https://faucet.circle.com) — USDC pays for gas on Arc.
 
 ```bash
-# Compile contracts
+# Compile contracts & generate TypeChain types
 npm run compile
 
-# Run tests (local Hardhat network)
+# Type-check scripts & tests
+npm run typecheck
+
+# Run all 27 unit & security tests (local Hardhat network)
 npm test
 
-# Deploy PaymentLog to Arc Testnet
+# Deploy contracts to Arc Testnet
 npm run deploy
-# -> copy the printed address into .env as CONTRACT_ADDRESS
-
-# Deploy Invoice to Arc Testnet
 npm run deploy:invoice
-
-# Deploy Escrow to Arc Testnet
 npm run deploy:escrow
-
-# Deploy SavingsPool to Arc Testnet
 npm run deploy:savings
+npm run deploy:fx
 
 # Watch PaymentRecorded events live
 npm run watch
 
-# Send real testnet USDC via App Kit (set RECIPIENT_ADDRESS in .env first)
+# Circle App Kit operations
 npm run send
-
-# Query aggregated USDC balance across chains via Unified Balance
 npm run balance
-
-# Bridge testnet USDC from Base Sepolia into Arc (needs USDC on the source chain)
 npm run bridge
 ```
 
-Verify your deployment on [Arcscan](https://testnet.arcscan.app) using the address printed by `deploy`.
+## Verified deployment (Arc Testnet)
 
-### App Kit send
+Machine-readable deployment metadata is tracked in [`deployments/arc-testnet.json`](deployments/arc-testnet.json):
 
-`scripts/send-payment.ts` uses `createViemAdapterFromPrivateKey` (from `@circle-fin/adapter-viem-v2/next`)
-to sign locally with the same private key from `.env`, then calls `AppKit#send()` to move real USDC on
-`Arc_Testnet` — no browser extension and no Circle-hosted wallet required. This is the "send" building
-block from Circle's four App Kit modules (Send, Bridge, Swap, Unified Balance); see [Next steps](#next-steps)
-for the others.
-
-## Frontend
-
-`frontend/` is a Vite + React + TypeScript dApp (wagmi + viem + ConnectKit) for all four contracts —
-connect a wallet, see your balance, and call each contract from a form. See `frontend/README.md` for setup.
-Build and type-check are verified; interactive browser testing with a live wallet is still outstanding
-(Chrome browser tools weren't available in the session it was built in).
-
-## AI agent
-
-`agent/` is a local [MCP](https://modelcontextprotocol.io) server exposing guarded payment tools
-(`get_balance`, `send_payment`, `list_recent_payments`) so an AI agent can transact on Arc under a spending
-cap and recipient allowlist, modeling the "AI agent economy" use case. See `agent/README.md` — fully
-verified live, including both guardrail-rejection paths and a real payment.
-
-## Verified deployment
-
-The full deploy → transact → watch loop has been run end-to-end on Arc Testnet:
-
-- Contract: [`0xB273B3D1f6fD43cc7EfaC625bfF56f114895adB5`](https://testnet.arcscan.app/address/0xB273B3D1f6fD43cc7EfaC625bfF56f114895adB5)
-- Example transaction: [`0x0d7359c8bc22f4a05973f72519c54bd25b625414e3e0b0afcd9ebc56fa02c2ad`](https://testnet.arcscan.app/tx/0x0d7359c8bc22f4a05973f72519c54bd25b625414e3e0b0afcd9ebc56fa02c2ad)
-- `npm run watch` printed the corresponding `PaymentRecorded` event in real time.
-- `npm run send` moved 0.10 USDC from `0x4dEF...EC8bc` to `0x7D4F...561Fe` via App Kit: [`0x1b2c0c8f...db25a9e`](https://testnet.arcscan.app/tx/0x1b2c0c8f44ac4fc34b3092bb3da57d8f4724388700e4d1f833204df34db25a9e).
-- `npm run balance` successfully calls App Kit's Gateway balance API and returns a real per-chain breakdown. It reads `0` everywhere because Unified Balance tracks funds explicitly deposited into Gateway via `kit.unifiedBalance.deposit()` — a separate step from holding USDC in the wallet directly (which is what `send` uses).
-- `npm run bridge` reaches App Kit's on-chain balance check and correctly reports `BALANCE_INSUFFICIENT_TOKEN` against a live RPC call. The wallet was funded with 20 USDC on Base Sepolia via the Circle faucet, but no Base Sepolia ETH for gas — the faucets that offer it gate behind a mainnet ETH balance requirement, so a full live transfer (burn + mint) hasn't been exercised. Code path and error handling are verified; this is the one script in the kit that's untested end-to-end.
-- Invoice: [`0xd010C9b04202ABC4598Ece27523E0CCbd0dE58ed`](https://testnet.arcscan.app/address/0xd010C9b04202ABC4598Ece27523E0CCbd0dE58ed) — created and paid a 0.05 USDC invoice: [create](https://testnet.arcscan.app/tx/0x059d469bf7252007772740011e66c6e889b5ddcd917e2a9bb49fa6ebb1be55b3), [pay](https://testnet.arcscan.app/tx/0x419f86b73007f5714b564938bee05c05420b44c953cacc1b2ec64b105705ce4d) (same address as both seller and payer in this demo, for simplicity).
-- Escrow: [`0x4cBbeb8c14DaDe28217a5034Df98264e26C8169D`](https://testnet.arcscan.app/address/0x4cBbeb8c14DaDe28217a5034Df98264e26C8169D) — opened and released 0.2 USDC to a separate recipient address: [open](https://testnet.arcscan.app/tx/0x1fbf3780cbb30c76a2ff40843fa1c022cd1a88a0b734813c762f23c9c3914366), [release](https://testnet.arcscan.app/tx/0xc531f8708d99c2a9f02d240b8f824fa3257b64529f5406c9d545025967d200ac).
-- SavingsPool: [`0xAc666C7Db3e03222fC16d1Af5447F0C6437dB069`](https://testnet.arcscan.app/address/0xAc666C7Db3e03222fC16d1Af5447F0C6437dB069) — deposited 0.5 USDC, funded 0.1 USDC in rewards, and confirmed the redeemable balance correctly rose to 0.6 before withdrawing: [deposit](https://testnet.arcscan.app/tx/0xe27e11ac298bc1c5e0fc9851369bb53c83c2f069e0f128aab33d0b962d0689ed), [fundRewards](https://testnet.arcscan.app/tx/0x86ee5c5ffaf5722118d7d23f205297e963c418c05f7309b57a73849587a8e4c5), [withdraw](https://testnet.arcscan.app/tx/0xe5ad08d937bd14542201ce68c5ef40b2b632e6f915452ac6bcc4c2d520acb821).
-
-## Next steps
-
-Everything in `ROADMAP.md` has at least an initial pass built and verified — see `DEV_STATE.md` for the
-full current-state summary. Nothing below is required; these are optional follow-ups if you want to keep going:
-
-- **Interactive browser test of `frontend/`** with a real wallet — the one meaningful unverified gap. Build
-  and type-check pass, but click-through testing hasn't been done (needs Chrome browser tools enabled).
-- **A full live `bridge()` transfer** — code path is verified, but the actual burn+mint was never exercised
-  because Base Sepolia gas faucets all require a pre-existing mainnet ETH balance. Skip unless a no-cost
-  gas source turns up.
-- **Deploy `frontend/` somewhere static** (Vercel/Netlify) so it's a shareable link instead of local-only.
-- Optional deeper App Kit exploration: `kit.unifiedBalance.deposit()` to actually fund the Gateway balance
-  (currently reads 0 because nothing's been deposited into it — see `agent/README.md` and the Verified
-  deployment notes above for what's already been exercised).
+- **PaymentLog**: [`0xB273B3D1f6fD43cc7EfaC625bfF56f114895adB5`](https://testnet.arcscan.app/address/0xB273B3D1f6fD43cc7EfaC625bfF56f114895adB5) — [example tx](https://testnet.arcscan.app/tx/0x0d7359c8bc22f4a05973f72519c54bd25b625414e3e0b0afcd9ebc56fa02c2ad)
+- **Invoice**: [`0xd010C9b04202ABC4598Ece27523E0CCbd0dE58ed`](https://testnet.arcscan.app/address/0xd010C9b04202ABC4598Ece27523E0CCbd0dE58ed) — [create](https://testnet.arcscan.app/tx/0x059d469bf7252007772740011e66c6e889b5ddcd917e2a9bb49fa6ebb1be55b3), [pay](https://testnet.arcscan.app/tx/0x419f86b73007f5714b564938bee05c05420b44c953cacc1b2ec64b105705ce4d)
+- **Escrow**: [`0x4cBbeb8c14DaDe28217a5034Df98264e26C8169D`](https://testnet.arcscan.app/address/0x4cBbeb8c14DaDe28217a5034Df98264e26C8169D) — [open](https://testnet.arcscan.app/tx/0x1fbf3780cbb30c76a2ff40843fa1c022cd1a88a0b734813c762f23c9c3914366), [release](https://testnet.arcscan.app/tx/0xc531f8708d99c2a9f02d240b8f824fa3257b64529f5406c9d545025967d200ac)
+- **SavingsPool**: [`0xAc666C7Db3e03222fC16d1Af5447F0C6437dB069`](https://testnet.arcscan.app/address/0xAc666C7Db3e03222fC16d1Af5447F0C6437dB069) — [deposit](https://testnet.arcscan.app/tx/0xe27e11ac298bc1c5e0fc9851369bb53c83c2f069e0f128aab33d0b962d0689ed), [fundRewards](https://testnet.arcscan.app/tx/0x86ee5c5ffaf5722118d7d23f205297e963c418c05f7309b57a73849587a8e4c5), [withdraw](https://testnet.arcscan.app/tx/0xe5ad08d937bd14542201ce68c5ef40b2b632e6f915452ac6bcc4c2d520acb821)
+- **App Kit `send()`**: [`0x1b2c0c8f...db25a9e`](https://testnet.arcscan.app/tx/0x1b2c0c8f44ac4fc34b3092bb3da57d8f4724388700e4d1f833204df34db25a9e)

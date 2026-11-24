@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "1.0.0",
+  "disclaimer": "For personal testing, education, and Arc Testnet experimentation only. Unaudited, provided as-is without warranties of any kind. Do not use with real mainnet assets.",
+  "network": {
+    "name": "Arc Testnet",
+    "chainId": 5042002,
+    "rpcUrls": [
+      "https://rpc.testnet.arc.network",
+      "https://rpc.testnet.arc.io"
+    ],
+    "explorerUrl": "https://testnet.arcscan.app",
+    "nativeGasToken": {
+      "symbol": "USDC",
+      "decimals": 18
+    },
+    "ecosystemTokens": {
+      "USDC_ERC20_INTERFACE": "0x3600000000000000000000000000000000000000",
+      "EURC": "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a"
+    }
+  },
+  "contracts": {
+    "PaymentLog": {
+      "address": "0xB273B3D1f6fD43cc7EfaC625bfF56f114895adB5",
+      "verifiedTransactions": [
+        {
+          "action": "recordPayment",
+          "txHash": "0x0d7359c8bc22f4a05973f72519c54bd25b625414e3e0b0afcd9ebc56fa02c2ad"
+        }
+      ]
+    },
+    "Invoice": {
+      "address": "0xd010C9b04202ABC4598Ece27523E0CCbd0dE58ed",
+      "verifiedTransactions": [
+        {
+          "action": "createInvoice",
+          "txHash": "0x059d469bf7252007772740011e66c6e889b5ddcd917e2a9bb49fa6ebb1be55b3"
+        },
+        {
+          "action": "payInvoice",
+          "txHash": "0x419f86b73007f5714b564938bee05c05420b44c953cacc1b2ec64b105705ce4d"
+        }
+      ]
+    },
+    "Escrow": {
+      "address": "0x4cBbeb8c14DaDe28217a5034Df98264e26C8169D",
+      "verifiedTransactions": [
+        {
+          "action": "open",
+          "txHash": "0x1fbf3780cbb30c76a2ff40843fa1c022cd1a88a0b734813c762f23c9c3914366"
+        },
+        {
+          "action": "release",
+          "txHash": "0xc531f8708d99c2a9f02d240b8f824fa3257b64529f5406c9d545025967d200ac"
+        }
+      ]
+    },
+    "SavingsPool": {
+      "address": "0xAc666C7Db3e03222fC16d1Af5447F0C6437dB069",
+      "verifiedTransactions": [
+        {
+          "action": "deposit",
+          "txHash": "0xe27e11ac298bc1c5e0fc9851369bb53c83c2f069e0f128aab33d0b962d0689ed"
+        },
+        {
+          "action": "fundRewards",
+          "txHash": "0x86ee5c5ffaf5722118d7d23f205297e963c418c05f7309b57a73849587a8e4c5"
+        },
+        {
+          "action": "withdraw",
+          "txHash": "0xe5ad08d937bd14542201ce68c5ef40b2b632e6f915452ac6bcc4c2d520acb821"
+        }
+      ]
+    }
+  },
+  "appKitTransactions": [
+    {
+      "module": "send",
+      "amountUsdc": "0.10",
+      "txHash": "0x1b2c0c8f44ac4fc34b3092bb3da57d8f4724388700e4d1f833204df34db25a9e"
+    }
+  ]
+}

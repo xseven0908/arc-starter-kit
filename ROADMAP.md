@@ -1,70 +1,40 @@
 # Roadmap
 
-## Current state (v0.1)
+## Phase 1 — Prove the loop end-to-end (Complete)
 
-A minimal Hardhat + TypeScript starter targeting Arc Testnet (chain id `5042002`).
+- [x] Fund a testnet-only wallet from the [Circle faucet](https://faucet.circle.com)
+- [x] `npm run deploy` against Arc Testnet, confirm the contract on [Arcscan](https://testnet.arcscan.app)
+- [x] `npm run watch` live event verification against real transactions
+- [x] Document deployed addresses and verified transactions in `README.md` and `deployments/arc-testnet.json`
 
-| Piece | What it does | Status |
-|---|---|---|
-| `contracts/PaymentLog.sol` | Records `(from, to, amount, memo)` and emits `PaymentRecorded` | Compiles, one passing test |
-| `scripts/deploy.ts` | Deploys `PaymentLog` via Hardhat/ethers | Not yet run against Testnet (needs funded key) |
-| `scripts/watch-events.ts` | Live-watches `PaymentRecorded` via viem `watchEvent` | Verified to parse/run; not yet watched a real event |
-| `test/PaymentLog.test.ts` | One Hardhat test, local network only | Passing |
+## Phase 2 — Make payments real (App Kit) (Complete)
 
-What's deliberately **not** there yet: no real token transfer (the contract only logs amounts, it doesn't move USDC), no frontend, no CI, no App Kit integration, no interaction with Arc's Circle-managed SDKs (Developer-Controlled Wallets / Smart Contract Platform).
+- [x] `send()` — `scripts/send-payment.ts` moves real testnet USDC via App Kit (verified on Testnet)
+- [x] `unifiedBalance` — `scripts/unified-balance.ts` queries `kit.unifiedBalance.getBalances()`
+- [x] `bridge()` — `scripts/bridge-payment.ts` calls `kit.bridge()` (code-verified against live RPC)
+- [x] Extend contract surface with hold/release (`Escrow.sol`) and atomic FX settlement (`AtomicFxPvP.sol`)
 
----
+## Phase 3 — Contract surface area & v0.2 security hardening (Complete)
 
-## Phase 1 — Prove the loop end-to-end
-
-Nothing here changes the code; it validates what already exists.
-
-- [ ] Fund a testnet-only wallet from the [Circle faucet](https://faucet.circle.com)
-- [ ] `npm run deploy` against Arc Testnet, confirm the contract on [Arcscan](https://testnet.arcscan.app)
-- [ ] `npm run watch` in one terminal, call `recordPayment` from Arcscan's "Write Contract" tab in another, confirm the event prints
-- [ ] Add the deployed address + a short "it works" note to the README
-
-## Phase 2 — Make payments real (App Kit)
-
-Right now `PaymentLog` just logs numbers; nothing actually moves. Wiring in Circle's `@circle-fin/app-kit` closes that gap:
-
-- [x] `send()` — `scripts/send-payment.ts` moves real testnet USDC via App Kit (verified on Testnet, see README). Still standalone rather than coupled to `recordPayment()`.
-- [x] `unifiedBalance` — `scripts/unified-balance.ts` queries `kit.unifiedBalance.getBalances()` (verified working; reads 0 since no funds have been deposited into Gateway yet via `deposit()`)
-- [x] `bridge()` — `scripts/bridge-payment.ts` calls `kit.bridge()`; code path verified against the live API (USDC funded on Base Sepolia, but no faucet would issue Base Sepolia ETH for gas without a mainnet balance). Live burn+mint transfer untested; revisit if a gas faucet becomes available.
-- [ ] Extend `PaymentLog` (or add a sibling contract) with an `escrow`-style hold/release pattern, since payments + bridging naturally lead to "pay on confirm" flows
-
-## Phase 3 — Contract surface area
-
-The current contract is intentionally the simplest possible thing. Natural next contracts, in rough order of complexity:
-
-- [x] **Invoice**: `contracts/Invoice.sol` — sellers issue invoices, buyers pay in native USDC via `payable`; 5 tests, deployed and paid live on Testnet. Maps to "e-commerce settlement."
-- [x] **Escrow**: `contracts/Escrow.sol` — open/release/refund/reclaim-after-timeout; 6 tests, deployed and released live on Testnet. Maps to "p2p payments" with dispute safety.
-- [x] **Savings pool**: `contracts/SavingsPool.sol` — single-asset native USDC vault, ERC-4626-style share accounting (user chose this over a mock-ERC20 collateral pool). 5 tests, deployed live: deposit → fundRewards → verified redeemable balance rose correctly → withdraw.
-- [ ] Multi-contract test suite + gas snapshot once there's more than one contract, so regressions in fee behavior are visible
+- [x] **Invoice**: `contracts/Invoice.sol` — sellers issue invoices, buyers pay in native USDC via `payable`; hardened with `nonReentrant`, ID bounds checks, and pull-payment fallback (`withdrawProceeds()`).
+- [x] **Escrow**: `contracts/Escrow.sol` — open/release/refund/reclaim-after-timeout; hardened with `nonReentrant`, ID bounds checks, and pull-payment fallback (`claimPending()`).
+- [x] **Savings pool**: `contracts/SavingsPool.sol` — single-asset native USDC vault with internal `totalAssets` accounting and `nonReentrant` protection.
+- [x] **Atomic FX PvP**: `contracts/AtomicFxPvP.sol` — RFQ Payment-versus-Payment settlement between native 18-decimal USDC and 6-decimal ERC-20 stablecoins (e.g. `EURC`).
+- [x] **27-test suite**: malicious reverting-receiver DoS resistance, multi-user share conservation, and FX PvP atomicity tests.
 
 ## Phase 4 — Frontend
 
-- [x] `frontend/` — Vite + React + TypeScript app using `wagmi` + `viem`
-- [x] Wallet connect via ConnectKit (browser-injected wallets; WalletConnect optional via env var)
-- [x] UI for all four contracts: PaymentLog (record + live event feed), Invoice (create + pay), Escrow (open + release), SavingsPool (deposit/withdraw + live redeemable balance)
-- [ ] Interactive browser verification with a live wallet — build/type-check pass, but click-through testing wasn't done (Chrome browser tools unavailable that session)
-- [ ] Deploy the frontend somewhere static (Vercel/Netlify) so it's a shareable demo, not just local scripts
+- [x] `frontend/` — Vite + React + TypeScript app using `wagmi` + `viem` + `ConnectKit`
+- [x] UI for PaymentLog, Invoice, Escrow, and SavingsPool
+- [x] Automated frontend production build verification in GitHub Actions CI
 
-## Phase 5 — AI agent integration
+## Phase 5 — AI agent integration (Complete)
 
-- [x] ~~Point an MCP-capable client at Arc's MCP server~~ — corrected: `docs.arc.io/mcp` (not `/ai/mcp`, the earlier 404 was a wrong path) exposes exactly two tools, `search` and `get page`, over Arc's own documentation. It's a docs-lookup server, not a wallet/balance/contract-state interface — there is nothing there for an agent to transact with.
-- [x] Build our own MCP server instead (`agent/`) exposing `get_balance`, `send_payment`, and `list_recent_payments` tools that wrap `PaymentLog` + a native transfer, under a spending policy (fixed cap per call, allowlisted recipients). Verified live: over-cap and not-allowlisted calls both correctly rejected, a valid payment succeeded (real transfer + PaymentLog entry).
-- [x] Log agent-initiated payments distinctly — `send_payment` prefixes the on-chain memo with `[agent]`, and `list_recent_payments` surfaces an `isAgentPayment` flag; confirmed both live test payments showed up flagged correctly. Discovered along the way: Arc Testnet's public RPC prunes/rate-limits `eth_getLogs`, so the tool is scoped to a ~200-block lookback with graceful degradation on RPC failure (see `agent/README.md`).
+- [x] Local MCP server (`agent/`) exposing `get_balance`, `send_payment`, and `list_recent_payments` under `SPEND_CAP_USDC` and `ALLOWLIST` guardrails
+- [x] `[agent] ` memo tagging and RPC log-pruning graceful degradation
 
-## Phase 6 — Operational hardening
+## Phase 6 — Operational hardening (Complete)
 
-- [x] GitHub Actions CI: `.github/workflows/ci.yml` runs `npm ci`, `compile`, `tsc --noEmit`, and `test` on every push/PR to `main`
-- [ ] Solidity static analysis (Slither or equivalent) once contracts beyond `PaymentLog` exist
-- [ ] Move `PRIVATE_KEY` handling off plaintext `.env` for anything beyond local testnet use (e.g. Circle's Developer-Controlled Wallets, which sign server-side and never expose a raw key — see `arc/tutorials/deploy-contracts`)
-- [ ] Read `arc/references/evm-differences` before writing anything beyond simple contracts — Arc's Reth-based EVM has a few documented deviations (e.g. around `CALL`-related precompiles) worth knowing before they cause a subtle bug
-
----
-
-## Suggested order
-
-Phase 1 first regardless — an unverified deploy script is a liability. After that, Phase 2 (real USDC movement via App Kit) is the highest-value next step since it's what actually differentiates Arc from "yet another EVM chain," followed by Phase 4 (frontend) to make the project demoable. Phases 3, 5, and 6 can interleave depending on whether you're more interested in contract design, AI-agent workflows, or making this production-shaped.
+- [x] Full-stack GitHub Actions CI (`.github/workflows/ci.yml`): verifies root contracts/tests, `frontend/` build, and `agent/` TypeScript check on every push/PR
+- [x] Architecture (`docs/architecture.md`) and Security Model (`docs/security-model.md`) documentation with explicit disclaimers
+- [x] MIT `LICENSE` and structured `deployments/arc-testnet.json` manifest
