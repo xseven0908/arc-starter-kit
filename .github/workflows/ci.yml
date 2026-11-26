@@ -42,15 +42,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - run: npm ci --legacy-peer-deps
-      - run: |
-          out=$(npm run build 2>&1)
-          code=$?
-          echo "$out"
-          if [ $code -ne 0 ]; then
-            msg=$(echo "$out" | tail -n 25 | tr '\n' ' ' | cut -c1-800)
-            echo "::error title=FrontendBuildExit${code}::$msg"
-            exit $code
-          fi
+      - run: npm run build
 
   agent:
     name: Guarded MCP Agent
