@@ -43,13 +43,14 @@ jobs:
 
       - run: npm ci --legacy-peer-deps
       - run: |
-          if ! out=$(npm run build 2>&1); then
-            echo "$out"
-            msg=$(echo "$out" | tr '\n' ' ' | cut -c1-800)
-            echo "::error title=FrontendBuildError::$msg"
-            exit 1
-          fi
+          out=$(npm run build 2>&1)
+          code=$?
           echo "$out"
+          if [ $code -ne 0 ]; then
+            msg=$(echo "$out" | tail -n 25 | tr '\n' ' ' | cut -c1-800)
+            echo "::error title=FrontendBuildExit${code}::$msg"
+            exit $code
+          fi
 
   agent:
     name: Guarded MCP Agent
