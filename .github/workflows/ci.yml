@@ -42,7 +42,16 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - run: npm ci --legacy-peer-deps
-      - run: npm run build
+      - run: |
+          set +e
+          npm run build > /tmp/build.log 2>&1
+          code=$?
+          cat /tmp/build.log
+          if [ $code -ne 0 ]; then
+            msg=$(tail -n 30 /tmp/build.log | tr '\n\r' '  ' | cut -c1-800)
+            echo "::error title=BuildExit${code}::$msg"
+            exit $code
+          fi
 
   agent:
     name: Guarded MCP Agent
