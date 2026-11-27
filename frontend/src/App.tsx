@@ -4,6 +4,7 @@ import { PaymentLogPanel } from "./components/PaymentLogPanel";
 import { InvoicePanel } from "./components/InvoicePanel";
 import { EscrowPanel } from "./components/EscrowPanel";
 import { SavingsPoolPanel } from "./components/SavingsPoolPanel";
+import { AtomicFxPvPPanel } from "./components/AtomicFxPvPPanel";
 import "./App.css";
 
 function App() {
@@ -14,8 +15,8 @@ function App() {
         author is not liable for any loss. 仅供个人测试使用,不作任何承诺,风险自负,由此造成的任何损失作者概不负责。
       </div>
       <header>
-        <h1>Arc Starter Kit</h1>
-        <p>A frontend for the PaymentLog, Invoice, Escrow, and SavingsPool contracts deployed on Arc Testnet.</p>
+        <h1>Arc Starter Kit (v0.2)</h1>
+        <p>A frontend for the PaymentLog, Invoice, Escrow, SavingsPool, and AtomicFxPvP contracts on Arc Testnet.</p>
         <ConnectKitButton />
       </header>
       <Balance />
@@ -24,6 +25,7 @@ function App() {
         <InvoicePanel />
         <EscrowPanel />
         <SavingsPoolPanel />
+        <AtomicFxPvPPanel />
       </main>
     </div>
   );
